@@ -62,5 +62,6 @@ def select_files_by_index(files):
 	promt = input(f"{Color.BLUE}Enter file index(s) : ")
 	if promt in ["*","all"]:
 		return files
+		
 	indexes =list(map(int ,promt.split()))
 	return [files[i] for i in indexes]
