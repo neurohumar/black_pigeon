@@ -20,7 +20,8 @@ print(option)
 #if option == 4:
 	#sys.exit()
 if option  < 4 and option > 0:
-	container = input(f"{Color.GREEN}Enter the container where you want to hide your files\nContainer should be a PNG or JPEG file\n>{Color.RESET}")
+	container = input(f"{Color.GREEN}Enter the container image \nContainer should be a PNG or JPEG file\n>{Color.RESET}")
+    
 
 	if option == 1:
 		dirs = input(f"{Color.GREEN}{Color.BOLD}Which directory you want to hide : \t\n{Color.RESET}>")
