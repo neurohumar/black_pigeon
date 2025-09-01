@@ -1,8 +1,9 @@
 #! /bin/python3
 
-from pkg.pigeon import Locker , Unlocker , Injector , Extractor
-from pkg.util import discover_all_files , show_banner , select_files_by_index ,Color
+from pkg.pigeon import Locker, Unlocker, Injector, Extractor, Authentication
+from pkg.util import discover_all_files, show_banner, select_files_by_index, Color
 import sys
+
 
 show_banner()
 print(f"""{Color.BLUE}SELECT A OPTION :
@@ -17,36 +18,70 @@ print(f"""{Color.BLUE}SELECT A OPTION :
 option = int(input("\n>"))
 print(option)
 
-#if option == 4:
-	#sys.exit()
-if option  < 4 and option > 0:
-	container = input(f"{Color.GREEN}Enter the container image \nContainer should be a PNG or JPEG file\n>{Color.RESET}")
-    
+if option == 1 or option == 2:
+    cover_image = input(
+            f"""
+            {Color.MAGENTA}COVER_IMAGE is a JPEG or PNG image where the file(s) will be obscured or extracted
+            {Color.YELLOW}{Color.BOLD}
+            Enter the path of the cover image :
+            >{Color.RESET}"""
+                        )
+    if not cover_image:
+        print(f"{Color.RED}{Color.BOLD}Cover Image not found!{Color.RESET}")
+    if option == 1:
+        dirs = input(f"""
+            {Color.MAGENTA}DIRECTORY that contains all files to be obscured.
+            No other files should keep in the DIRECTORY not to be hidden.
+            {Color.YELLOW}{Color.BOLD}
+            Enter the directory path to be hidden :
+            >{Color.RESET}"""
+                     )
+        if not dirs:
+            print(f"{Color.RED}{Color.BOLD}Directory not found!{Color.RESET}")
+        all_files = discover_all_files(dirs)
+        print(f"""
+            {Color.MAGENTA}Select file(s) by index number separated by space to hide.
+            If all files need to be hidden , enter '*'
+            {Color.YELLOW}{Color.BOLD}
+        """)
+        files = select_files_by_index(all_files)
+        password = input(f"""
+            {Color.MAGENTA}PASSWORD is strong feature to save obscured file(s) from leaking to the imposter(s)
+            {Color.YELLOW}{Color.BOLD}
+            Enter a strong password (at least 8 characters) : 
+            >{Color.RESET}""")
+        if not password:
+            print(f"{Color.RED}{Color.BOLD}Password not found!{Color.RESET}")
+        Auth = Authentication(password=password)
+        Locker("secret.zip", Auth.get_hash(), True, *files)
+        Injector(cover_image, "secret.zip")
+        print(f"{Color.GREEN}{Color.BOLD}File(s) successfully injected into '{cover_image}'{Color.RESET}")
 
-	if option == 1:
-		dirs = input(f"{Color.GREEN}{Color.BOLD}Which directory you want to hide : \t\n{Color.RESET}>")
-		files = discover_all_files(dirs)
-		selected_files = select_files_by_index(files)
-		l = Locker("secret.zip",None , True ,*selected_files)
-		print (f"{Color.BLUE}Note down the encryption key . It will be needed for decrypting your files in future {Color.RESET}.{Color.BG_BLUE}\nkey {l.get_key()}\n{Color.BOLD}{Color.MAGENTA}Chack 'secret.key' file for the encrytion key in the current directory{Color.RESET}")
-		with open("secret.key","w") as fk:
-			fk.write(l.get_key())
-		Injector(container,"secret.zip")
-		print (f"{Color.YELLOW}Your contents are successfully injected to the {container}{Color.RESET}")
+    elif option == 2:
+        password = input(f"""
+            {Color.MAGENTA}PASSWORD is a crucial things to extract files , set during obscuration.
+            {Color.YELLOW}{Color.BOLD}
+            Enter the password to extract file(s) :  
+            >{Color.RESET}""")
+        
+        if not password:
+            print(f"{Color.RED}{Color.BOLD}Password not found!{Color.RESET}")
+        outputpath = input(f"""
+            {Color.MAGENTA}OUTPUT_PATH is a path where the extracted file(s) will be saved.
+            {Color.YELLOW}{Color.BOLD}
+            Enter the output path : 
+            >{Color.RESET}""")
+        Auth = Authentication(password=password)
+        Extractor(cover_image, "secret.zip")
 
-	elif option == 2:
-		key = input(f"{Color.GREEN}Enter the decrytion key : {Color.RESET}")
-		if not len(key):
-			print (f"{Color.RED}Failed to decrypt???{Color.RESET}")
-			sys.exit()
-		outpath = input(f"{Color.GREEN}Where do you want to save the unlocked file : {Color.RESET}")
-		Extractor(container,"secret.zip")
-		if outpath != "":
-			Unlocker("secret.zip",key,outpath)
-		else:
-			Unlocker("secret.zip",key,"secret/")
+        u = Unlocker(
+                zipfile_name="secret.zip", key=Auth.get_hash(),
+                output_path=outputpath
+                )
 
-	elif option == 3:
-		pass
+        print(f"{Color.GREEN}{Color.BOLD}File successfully extracted to '{u.output_path}'{Color.RESET}")
+
+    elif option == 3:
+        sys.exit()
 
 
